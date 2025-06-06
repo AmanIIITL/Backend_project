@@ -49,7 +49,7 @@ const userSchema = new Schema({
 
 userSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
-    this.password = bcrypt.hash(this.password,10) // (kya hash krna hai, rounds)
+    this.password = await bcrypt.hash(this.password,10) // (kya hash krna hai, rounds)
     next();
 }) // this is a middleware isliye next hoga
 
