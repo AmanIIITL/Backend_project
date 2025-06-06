@@ -2,6 +2,7 @@
 import dotenv from "dotenv";
 // dotenv ko jaldi se jaldi import krna chahiye taki sare env variables available ho ske
 import connectDB from './db/index.js';
+import { app } from "./app.js";
 
 dotenv.config(
     {
