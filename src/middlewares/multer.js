@@ -3,6 +3,7 @@ import multer from "multer";
 // and then from their we will export it to the cloudinary
 // multer can be applied at many places like during the registration process to take fiels from user etc
 
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) { //cb stands for callback
     cb(null, "./public/temp")

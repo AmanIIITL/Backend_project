@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { response } from "express";
+import path from "path";
 
 const registerUser = asyncHandler(async (req, res) => {
     // steps to register:-
@@ -19,7 +20,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // 1
     const {username, fullname, email, password} = req.body
-    console.log("email: ", email);
+    // console.log("email: ", email);
 
     // 2
     // one way is to do seperately for each value
@@ -33,7 +34,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // 3
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{ username } , { email }]
     })
 
@@ -42,8 +43,21 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // 4
-    const avatarLocalPath = req.files?.avatar[0]?.path
-    const coverImageLocalPath = req.files?.coverImage[0]?.path
+    // const avatarLocalPath = path.resolve(req.files?.avatar[0]?.path);
+    // const coverImageLocalPath = path.resolve(req.files?.coverImage[0]?.path);
+    // above methods se if avatar aur coverimage nahi di toh error function me aaega ki cannot access 0th element, naki 
+    // avatar is required
+    // console.log("Absolute avatar path:", avatarLocalPath);
+
+    let avatarLocalPath;
+    if(req.files && Array.isArray(req.files.avatar) && req.files.avatar.length > 0){
+        avatarLocalPath = path.resolve(req.files.avatar[0].path)
+    }
+
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+        coverImageLocalPath = path.resolve(req.files.coverImage[0].path)
+    }
     
     if(!avatarLocalPath){
         throw new ApiError(400,"Avatar file is required")
@@ -52,6 +66,9 @@ const registerUser = asyncHandler(async (req, res) => {
     // 5
     const avatar = await uploadOnCloudinary(avatarLocalPath)
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
+    console.log("req.files:", req.files);
+    console.log("req.body:", req.body);
 
     if(!avatar){
         throw new ApiError(400,"Avatar file is required")
