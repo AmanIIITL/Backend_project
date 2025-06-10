@@ -12,13 +12,15 @@ import mongoose from "mongoose";
 const  generateAccessAndRefreshTokens = async(userId) => {
     try{
         const user = await User.findById(userId)
-        const accessToken = user.generateAccessToken
-        const refreshToken = user.generateRefreshToken
+        console.log("generating tokens")
+        const accessToken = user.generateAccessToken();
+        console.log("access token", accessToken)
+        const refreshToken = user.generateRefreshToken();
 
         user.refreshToken = refreshToken
         await user.save({ validateBeforeSave: false })
 
-        return {accessToken, refreshToken}
+        return {accessToken, refreshToken};
 
     } catch (error) {
         throw new ApiError(500, "something went wrong while generating access and refresh token")
@@ -160,7 +162,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // 5
-    const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
+    const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user?._id)
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
@@ -185,8 +187,8 @@ const logoutUser = asyncHandler(async(req, res) => {
     // clear refreshToken
     await User.findByIdAndUpdate(req.user._id,
         {
-        $set: {
-            refreshToken: undefined
+        $unset: {
+            refreshToken: 1 // this removes the field from the document
         }
         },{
         new: true
@@ -378,7 +380,7 @@ const getUserChannelProfile = asyncHandler(async(req, res) => {
                     $size: "$subscribedTo"
                 },
                 isSubscribed: {
-                    $condition: {
+                    $cond: {
                         if: {$in: [req.users?._id, "$subscribers.subscriber"]},then : true,
                         else: false
                     }

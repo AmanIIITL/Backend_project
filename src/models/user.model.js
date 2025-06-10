@@ -1,5 +1,6 @@
 import mongoose, {Schema} from "mongoose";
 import bcrypt from "bcrypt"; // to generate hash for passwords
+import jwt from "jsonwebtoken";
 
 const userSchema = new Schema({
     username:{
@@ -60,7 +61,7 @@ userSchema.methods.isPasswordCorrect = async function (password){
 
 //jwt is a bearer token means ye token jiske bhi paas hai mai usko data bhejunga yaani ki jwt token aek key ki tarah hai
 userSchema.methods.generateAccessToken = function(){
-    jwt.sign( // (payload, access token, expiry)
+    return jwt.sign( // (payload, access token, expiry)
         {
             _id: this._id,
             email: this.email,
@@ -71,11 +72,11 @@ userSchema.methods.generateAccessToken = function(){
         {
             expiresIn: process.env.ACCESS_TOKEN_EXPIRY
         }
-    )
+    );
 }
 
 userSchema.methods.generateRefreshToken = function(){
-    jwt.sign( // (payload, access token, expiry)
+    return jwt.sign( // (payload, access token, expiry)
         {
             _id: this._id
         },
@@ -83,7 +84,7 @@ userSchema.methods.generateRefreshToken = function(){
         {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
-    )
+    );
 }
 
 export const User = mongoose.model("User", userSchema)
